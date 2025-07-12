@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
-import { uploadImage } from "../utils/cloudinary.js";
+import { uploadImage, deleteImage } from "../utils/cloudinary.js";
 
 const generateAccessAndRefreshTokens = async (userID) => {
     try {
@@ -194,4 +194,144 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+const changePassword = asyncHandler(async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+        throw new ApiError("Current and new passwords are required", 400);
+    }
+    const user = req.user;
+    if (!user) {
+        throw new ApiError("User not authenticated", 401);
+    }
+    const isPasswordCorrect = await user.isPasswordCorrect(currentPassword);
+    if (!isPasswordCorrect) {
+        throw new ApiError("Current password is incorrect", 401);
+    }
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false });
+    res.json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+
+const getUserProfile = asyncHandler(async (req, res) => {
+    const userId = req.params.id || req.user._id;
+    const user = await User.findById(userId).select("-password -refreshToken");
+    if (!user) {
+        throw new ApiError("User not found", 404);
+    }
+    res.json(
+        new ApiResponse(200, {
+            _id: user._id,
+            fullName: user.fullName,
+            username: user.username,
+            email: user.email,
+            avatar: user.avatar,
+            coverImage: user.coverImage,
+        })
+    );
+});
+
+const updateUserProfile = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const { fullName, username, email } = req.body;
+    if (!fullName || !username || !email) {
+        throw new ApiError("Full name, username, and email are required", 400);
+    }
+    const user = await User.findByIdAndUpdate(
+        userId,
+        {
+            fullName,
+            username,
+            email,
+        },
+        { new: true }
+    );
+    if (!user) {
+        throw new ApiError("User not found", 404);
+    }
+    res.json(
+        new ApiResponse(200, {
+            _id: user._id,
+            fullName: user.fullName,
+            username: user.username,
+            email: user.email,
+            avatar: user.avatar,
+            coverImage: user.coverImage,
+        })
+    );
+});
+
+const updateAvatar = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const avatarLocalPath = req.file ? req.file.path : null;
+    if (!avatarLocalPath) {
+        throw new ApiError("Avatar is required", 400);
+    }
+    const avatar = await uploadImage(avatarLocalPath);
+    if (!avatar || !avatar.secure_url) {
+        throw new ApiError("Avatar upload failed", 500);
+    }
+    const user = await User.findById(userId).select("-password -refreshToken");
+    if (!user) {
+        throw new ApiError("User not found", 404);
+    }
+    // Delete old avatar from Cloudinary
+    if (user.avatar) {
+        await deleteImage(user.avatar);
+    }
+    user.avatar = avatar.secure_url;
+    await user.save({ validateBeforeSave: false });
+    res.json(
+        new ApiResponse(200, {
+            _id: user._id,
+            fullName: user.fullName,
+            username: user.username,
+            email: user.email,
+            avatar: user.avatar,
+            coverImage: user.coverImage,
+        })
+    );
+});
+
+const updateCoverImage = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const coverImageLocalPath = req.file ? req.file.path : null;
+    if (!coverImageLocalPath) {
+        throw new ApiError("Cover image is required", 400);
+    }
+    const coverImage = await uploadImage(coverImageLocalPath);
+    if (!coverImage || !coverImage.secure_url) {
+        throw new ApiError("Cover image upload failed", 500);
+    }
+    const user = await User.findById(userId).select("-password -refreshToken");
+    if (!user) {
+        throw new ApiError("User not found", 404);
+    }
+    // Delete old cover image from Cloudinary
+    if (user.coverImage) {
+        await deleteImage(user.coverImage);
+    }
+    user.coverImage = coverImage.secure_url;
+    await user.save({ validateBeforeSave: false });
+    res.json(
+        new ApiResponse(200, {
+            _id: user._id,
+            fullName: user.fullName,
+            username: user.username,
+            email: user.email,
+            avatar: user.avatar,
+            coverImage: user.coverImage,
+        })
+    );
+});
+
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    changePassword,
+    getUserProfile,
+    updateUserProfile,
+    updateAvatar,
+    updateCoverImage,
+};
