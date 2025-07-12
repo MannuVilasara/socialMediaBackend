@@ -1,5 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import dotenv from "dotenv";
+dotenv.config();
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -16,13 +18,13 @@ const uploadImage = async (filePath) => {
             throw new Error("File does not exist");
         }
         const result = await cloudinary.uploader.upload(filePath, {
-            folder: "socialMedia",
             resource_type: "auto",
         });
         fs.unlinkSync(filePath); // Remove the file after upload
         return result;
     } catch (error) {
         fs.unlinkSync(filePath); // Ensure the file is removed even if upload fails
+        // console.error("Cloudinary upload error:", error);
         throw new Error(`Image upload failed: ${error.message}`);
     }
 };
