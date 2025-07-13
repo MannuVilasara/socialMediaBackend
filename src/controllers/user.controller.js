@@ -204,16 +204,21 @@ const changePassword = asyncHandler(async (req, res) => {
     if (!currentPassword || !newPassword) {
         throw new ApiError("Current and new passwords are required", 400);
     }
-    const user = req.user;
+
+    // Fetch user with password to validate current password
+    const user = await User.findById(req.user._id);
     if (!user) {
-        throw new ApiError("User not authenticated", 401);
+        throw new ApiError("User not found", 404);
     }
+
     const isPasswordCorrect = await user.isPasswordCorrect(currentPassword);
     if (!isPasswordCorrect) {
         throw new ApiError("Current password is incorrect", 401);
     }
+
     user.password = newPassword;
     await user.save({ validateBeforeSave: false });
+
     res.json(new ApiResponse(200, {}, "Password changed successfully"));
 });
 
