@@ -139,7 +139,7 @@ const logoutUser = asyncHandler(async (req, res) => {
         throw new ApiError("User not authenticated", 401);
     }
     await User.findByIdAndUpdate(user._id, {
-        $set: { refreshToken: undefined },
+        $unset: { refreshToken: 1 },
     });
 
     const options = {
