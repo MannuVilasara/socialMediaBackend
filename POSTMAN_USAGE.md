@@ -84,28 +84,28 @@ The updated Postman collection now includes comprehensive testing for all Social
 ### 1. **Setup**
 
 1. Import the `postman_collection.json` file into Postman
-2. Ensure your server is running on `http://localhost:8000`
-3. Update the `baseUrl` variable if using a different port/host
+1. Ensure your server is running on `http://localhost:8000`
+1. Update the `baseUrl` variable if using a different port/host
 
 ### 2. **Testing Workflow**
 
 #### **Basic Authentication Flow:**
 
 1. Run **"Register User"** first (upload sample avatar/cover image files)
-2. Run **"Login User"** - this will automatically set all authentication tokens
-3. Now you can run any authenticated endpoint
+1. Run **"Login User"** - this will automatically set all authentication tokens
+1. Now you can run any authenticated endpoint
 
 #### **Content Creation Flow:**
 
 1. **"Create Tweet"** - automatically sets `tweetId`
-2. **"Create Playlist"** - automatically sets `playlistId`
-3. **"Publish Video"** - manually set `videoId` from response for subsequent video operations
+1. **"Create Playlist"** - automatically sets `playlistId`
+1. **"Publish Video"** - manually set `videoId` from response for subsequent video operations
 
 #### **Social Features Testing:**
 
 1. **"Toggle Tweet Like"** - likes/unlikes the created tweet
-2. **"Toggle Subscription"** - subscribes to a dummy channel (safe for testing)
-3. **"Add Comment"** - requires a `videoId` to be set manually
+1. **"Toggle Subscription"** - subscribes to a dummy channel (safe for testing)
+1. **"Add Comment"** - requires a `videoId` to be set manually
 
 ### 3. **Variables Available**
 
@@ -131,8 +131,8 @@ For some endpoints, you may need to manually update variables:
 For file upload endpoints (Register User, Publish Video):
 
 1. Select the file field in the request body
-2. Choose appropriate test files (images for avatar/cover, video file for video upload)
-3. Ensure files are properly selected before sending the request
+1. Choose appropriate test files (images for avatar/cover, video file for video upload)
+1. Ensure files are properly selected before sending the request
 
 ## Key Fixes Made
 

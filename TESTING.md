@@ -141,7 +141,7 @@ Success Rate: 100.0%
 
     Solution: Make sure your server is running with `npm run dev`
 
-2. **Database Connection**
+1. **Database Connection**
 
     ```
     Error: MongoServerError
@@ -149,7 +149,7 @@ Success Rate: 100.0%
 
     Solution: Ensure MongoDB is running and connection string is correct
 
-3. **File Upload Issues**
+1. **File Upload Issues**
 
     ```
     Error: Multer error
@@ -157,10 +157,12 @@ Success Rate: 100.0%
 
     Solution: Check multer middleware configuration and file permissions
 
-4. **Authentication Errors**
+1. **Authentication Errors**
+
     ```
     Status: 401
     ```
+
     Solution: Check JWT token generation and middleware
 
 ### Verbose Logging
@@ -254,8 +256,8 @@ const generateData = () => {
 Note: Video upload tests are not included due to complexity of handling large files in tests. To test video endpoints:
 
 1. Manually test with Postman/Thunder Client
-2. Use smaller test video files
-3. Mock the cloudinary upload service for testing
+1. Use smaller test video files
+1. Mock the cloudinary upload service for testing
 
 ### Comment Tests
 
@@ -273,18 +275,18 @@ Comment tests require existing video IDs, so they depend on video creation first
 When adding new endpoints:
 
 1. Update the corresponding test file
-2. Add the endpoint to this documentation
-3. Test both success and error cases
-4. Update the test coverage list
+1. Add the endpoint to this documentation
+1. Test both success and error cases
+1. Update the test coverage list
 
 ## 📞 Support
 
 If tests are failing:
 
 1. Check server logs
-2. Verify database connection
-3. Ensure all environment variables are set
-4. Check network connectivity
-5. Review recent code changes
+1. Verify database connection
+1. Ensure all environment variables are set
+1. Check network connectivity
+1. Review recent code changes
 
 For issues with specific endpoints, check the corresponding controller and route files.
