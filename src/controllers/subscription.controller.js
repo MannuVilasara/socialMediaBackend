@@ -3,29 +3,44 @@ import { User } from "../models/user.model.js";
 import { Subscription } from "../models/subscription.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/AsyncHandler.js";
 
 const toggleSubscription = asyncHandler(async (req, res) => {
     const { channelId } = req.params;
+
     if (!isValidObjectId(channelId)) {
         throw new ApiError(400, "Invalid channel ID");
     }
+
+    if (channelId === req.user._id.toString()) {
+        throw new ApiError(400, "You cannot subscribe to yourself");
+    }
+
     const existingSubscription = await Subscription.findOne({
-        channelId,
-        subscriberId: req.user._id,
+        channel: channelId,
+        subscriber: req.user._id,
     });
+
     if (existingSubscription) {
-        await existingSubscription.remove();
+        await Subscription.findByIdAndDelete(existingSubscription._id);
         res.status(200).json(
-            new ApiResponse("Unsubscribed from channel successfully")
+            new ApiResponse(
+                200,
+                { subscribed: false },
+                "Unsubscribed from channel successfully"
+            )
         );
     } else {
         await Subscription.create({
-            channelId,
-            subscriberId: req.user._id,
+            channel: channelId,
+            subscriber: req.user._id,
         });
         res.status(201).json(
-            new ApiResponse("Subscribed to channel successfully")
+            new ApiResponse(
+                201,
+                { subscribed: true },
+                "Subscribed to channel successfully"
+            )
         );
     }
 });
@@ -33,32 +48,41 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 // controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const { channelId } = req.params;
+
     if (!isValidObjectId(channelId)) {
         throw new ApiError(400, "Invalid channel ID");
     }
-    const subscribers = await Subscription.find({ channelId }).populate(
-        "subscriberId",
-        "username profilePicture"
-    );
+
+    const subscribers = await Subscription.find({
+        channel: channelId,
+    }).populate("subscriber", "username avatar fullName");
+
     res.status(200).json(
-        new ApiResponse("Channel subscribers fetched successfully", subscribers)
+        new ApiResponse(
+            200,
+            subscribers,
+            "Channel subscribers fetched successfully"
+        )
     );
 });
 
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
     const { subscriberId } = req.params;
+
     if (!isValidObjectId(subscriberId)) {
         throw new ApiError(400, "Invalid subscriber ID");
     }
-    const subscriptions = await Subscription.find({ subscriberId }).populate(
-        "channelId",
-        "name description"
-    );
+
+    const subscriptions = await Subscription.find({
+        subscriber: subscriberId,
+    }).populate("channel", "username avatar fullName");
+
     res.status(200).json(
         new ApiResponse(
-            "User subscribed channels fetched successfully",
-            subscriptions
+            200,
+            subscriptions,
+            "User subscribed channels fetched successfully"
         )
     );
 });

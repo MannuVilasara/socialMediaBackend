@@ -9,7 +9,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadImage = async (filePath) => {
+const uploadOnCloudinary = async (filePath) => {
     try {
         if (!filePath) {
             throw new Error("File path is required");
@@ -29,7 +29,7 @@ const uploadImage = async (filePath) => {
     }
 };
 
-const deleteImage = async (publicId) => {
+const deleteFromCloudinary = async (publicId) => {
     try {
         if (!publicId) {
             throw new Error("Public ID is required");
@@ -44,4 +44,4 @@ const deleteImage = async (publicId) => {
     }
 };
 
-export { uploadImage, deleteImage };
+export { uploadOnCloudinary, deleteFromCloudinary };

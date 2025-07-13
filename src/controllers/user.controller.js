@@ -2,7 +2,12 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
-import { uploadImage, deleteImage } from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
+import {
+    uploadOnCloudinary,
+    deleteFromCloudinary,
+} from "../utils/cloudinary.js";
 
 const generateAccessAndRefreshTokens = async (userID) => {
     try {
@@ -54,9 +59,9 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError("avatar is required", 400);
     }
 
-    const avatar = await uploadImage(avatarLocalPath);
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
     const coverImage = coverImageLocalPath
-        ? await uploadImage(coverImageLocalPath)
+        ? await uploadOnCloudinary(coverImageLocalPath)
         : "";
 
     if (!avatar || !avatar.secure_url) {
@@ -266,7 +271,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
     if (!avatarLocalPath) {
         throw new ApiError("Avatar is required", 400);
     }
-    const avatar = await uploadImage(avatarLocalPath);
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
     if (!avatar || !avatar.secure_url) {
         throw new ApiError("Avatar upload failed", 500);
     }
@@ -276,7 +281,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
     }
     // Delete old avatar from Cloudinary
     if (user.avatar) {
-        await deleteImage(user.avatar);
+        await deleteFromCloudinary(user.avatar);
     }
     user.avatar = avatar.secure_url;
     await user.save({ validateBeforeSave: false });
@@ -298,7 +303,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     if (!coverImageLocalPath) {
         throw new ApiError("Cover image is required", 400);
     }
-    const coverImage = await uploadImage(coverImageLocalPath);
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
     if (!coverImage || !coverImage.secure_url) {
         throw new ApiError("Cover image upload failed", 500);
     }
@@ -308,7 +313,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     }
     // Delete old cover image from Cloudinary
     if (user.coverImage) {
-        await deleteImage(user.coverImage);
+        await deleteFromCloudinary(user.coverImage);
     }
     user.coverImage = coverImage.secure_url;
     await user.save({ validateBeforeSave: false });
